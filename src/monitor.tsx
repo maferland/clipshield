@@ -3,6 +3,7 @@ import { useCachedState } from "@raycast/utils";
 import { useEffect, useCallback, useRef } from "react";
 import { detect } from "./detect";
 import { getPreferences } from "./preferences";
+import { markConcealed, clearClipboard as nativeClear } from "./clipboard";
 
 interface MonitorState {
   status: "idle" | "countdown" | "cleared";
@@ -32,6 +33,8 @@ export default function Monitor() {
     const detections = detect(text, prefs.enabledPatterns);
 
     if (detections.length > 0 && state.detectedText !== text) {
+      // Mark as concealed immediately so clipboard managers auto-expire it
+      markConcealed(text);
       const countdownEnd = Date.now() + prefs.clearDelay * 1000;
       setState((prev) => ({
         ...prev,
@@ -57,7 +60,7 @@ export default function Monitor() {
 
     // Only clear if clipboard still contains the detected text
     if (currentText === state.detectedText) {
-      await Clipboard.copy("");
+      nativeClear();
       setState((prev) => ({
         ...prev,
         status: "cleared",
@@ -97,11 +100,9 @@ export default function Monitor() {
       ? { source: Icon.Shield, tintColor: Color.Red }
       : { source: Icon.Shield, tintColor: Color.Green };
 
-  const title = state.status === "countdown" ? "⚠" : undefined;
-
   // In background mode, don't render full menu
   if (environment.launchType === LaunchType.Background) {
-    return <MenuBarExtra icon={icon} title={title} />;
+    return <MenuBarExtra icon={icon} />;
   }
 
   const secondsLeft =
@@ -110,7 +111,7 @@ export default function Monitor() {
       : null;
 
   return (
-    <MenuBarExtra icon={icon} title={title} tooltip="ClipShield — Clipboard Monitor">
+    <MenuBarExtra icon={icon} tooltip="ClipShield — Clipboard Monitor">
       <MenuBarExtra.Section title="Status">
         {state.status === "countdown" && (
           <MenuBarExtra.Item
