@@ -56,7 +56,9 @@ bun run dev    # opens Raycast and imports the extension
 
 ## Support
 
-<a href="https://www.buymeacoffee.com/maferland" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="40"></a>
+If ClipShield helps you stay safe, consider buying me a coffee:
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/maferland)
 
 ## License
 
