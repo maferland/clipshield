@@ -19,7 +19,7 @@ Raycast extension that monitors clipboard for sensitive data and auto-clears it.
 
 ## Dev
 ```sh
-npm install
-npm run dev        # Raycast hot reload
-npm test           # Vitest
+bun install
+bun run dev        # Raycast hot reload
+bun test           # Vitest
 ```
