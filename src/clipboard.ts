@@ -1,27 +1,32 @@
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 /**
  * Re-write text to macOS pasteboard with org.nspasteboard.ConcealedType.
  * Clipboard managers (Raycast, Paste, etc.) auto-expire concealed entries.
+ * Uses JXA via execFileSync to avoid shell escaping issues.
  */
 export function markConcealed(text: string): void {
-  const escaped = text.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  execSync(`osascript -e '
-    use framework "AppKit"
-    set pb to current application\\'s NSPasteboard\\'s generalPasteboard()
-    pb\\'s clearContents()
-    pb\\'s setString:"${escaped}" forType:"public.utf8-plain-text"
-    pb\\'s setString:"" forType:"org.nspasteboard.ConcealedType"
-  '`);
+  const b64 = Buffer.from(text).toString("base64");
+  execFileSync("osascript", [
+    "-l", "JavaScript",
+    "-e", 'ObjC.import("AppKit")',
+    "-e", 'ObjC.import("Foundation")',
+    "-e", `var d = $.NSData.alloc.initWithBase64EncodedStringOptions("${b64}", 0)`,
+    "-e", "var t = $.NSString.alloc.initWithDataEncoding(d, 4)",
+    "-e", "var pb = $.NSPasteboard.generalPasteboard",
+    "-e", "pb.clearContents",
+    "-e", 'pb.setStringForType(t, "public.utf8-plain-text")',
+    "-e", 'pb.setStringForType("", "org.nspasteboard.ConcealedType")',
+  ]);
 }
 
 /**
  * Clear the clipboard entirely.
  */
 export function clearClipboard(): void {
-  execSync(`osascript -e '
-    use framework "AppKit"
-    set pb to current application\\'s NSPasteboard\\'s generalPasteboard()
-    pb\\'s clearContents()
-  '`);
+  execFileSync("osascript", [
+    "-l", "JavaScript",
+    "-e", 'ObjC.import("AppKit")',
+    "-e", "$.NSPasteboard.generalPasteboard.clearContents",
+  ]);
 }
