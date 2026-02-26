@@ -1,0 +1,92 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "clipshield",
+  "title": "ClipShield",
+  "description": "Monitor clipboard for sensitive data (credit cards, SSN/SIN) and auto-clear it",
+  "icon": "shield-icon.png",
+  "author": "maferland",
+  "categories": ["Security", "System"],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "monitor",
+      "title": "Monitor Clipboard",
+      "description": "Background clipboard monitor for sensitive data",
+      "mode": "menu-bar",
+      "interval": "10s"
+    },
+    {
+      "name": "scan",
+      "title": "Scan Clipboard Now",
+      "description": "Check current clipboard for sensitive data and clear if found",
+      "mode": "no-view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "clearDelay",
+      "title": "Clear Delay (seconds)",
+      "description": "Seconds to wait before clearing sensitive clipboard data",
+      "type": "textfield",
+      "default": "30",
+      "required": false
+    },
+    {
+      "name": "enableCC",
+      "title": "Detect Credit Cards",
+      "description": "Detect credit card numbers (Visa, Mastercard, Amex, etc.)",
+      "type": "checkbox",
+      "default": true,
+      "label": "Enable",
+      "required": false
+    },
+    {
+      "name": "enableSSN",
+      "title": "Detect SSN (US)",
+      "description": "Detect US Social Security Numbers",
+      "type": "checkbox",
+      "default": true,
+      "label": "Enable",
+      "required": false
+    },
+    {
+      "name": "enableSIN",
+      "title": "Detect SIN (CA)",
+      "description": "Detect Canadian Social Insurance Numbers",
+      "type": "checkbox",
+      "default": true,
+      "label": "Enable",
+      "required": false
+    },
+    {
+      "name": "showNotification",
+      "title": "Show Notification",
+      "description": "Show HUD notification when clipboard is cleared",
+      "type": "checkbox",
+      "default": true,
+      "label": "Enable",
+      "required": false
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.56.1",
+    "@raycast/utils": "^1.4.8"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "1.0.5",
+    "@types/node": "~20.8.0",
+    "@types/react": "~18.2.0",
+    "eslint": "^8.51.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "^1.0.0"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
