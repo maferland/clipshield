@@ -15,8 +15,7 @@ Silently detects credit card numbers, SSNs, and SINs in your clipboard and auto-
 
 **Homebrew** (recommended):
 ```bash
-brew tap maferland/tap
-brew install --cask clipshield
+brew install --cask maferland/tap/clipshield
 ```
 
 **Manual**: Download DMG from [Releases](https://github.com/maferland/clipshield/releases), open it, drag `ClipShield.app` to Applications.
