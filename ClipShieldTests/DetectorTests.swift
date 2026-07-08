@@ -63,13 +63,19 @@ struct DetectTests {
 
     @Suite("SIN (CA)")
     struct SIN {
-        @Test("detects SIN", arguments: [
-            ("123 456 789", "spaced"),
-            ("123-456-789", "dashed"),
+        // 046 454 286 is a Luhn-valid test SIN.
+        @Test("detects Luhn-valid SIN", arguments: [
+            ("046 454 286", "spaced"),
+            ("046-454-286", "dashed"),
         ])
         func detectsSIN(input: String, label: String) {
             let results = detect(input, enabled: allPatterns)
             #expect(results.contains { $0.type == .sin })
+        }
+
+        @Test("rejects SIN that fails Luhn")
+        func rejectsInvalidLuhn() {
+            #expect(detect("123 456 789", enabled: [.sin]).isEmpty)
         }
     }
 

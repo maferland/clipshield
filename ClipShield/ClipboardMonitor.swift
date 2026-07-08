@@ -13,6 +13,7 @@ enum MonitorStatus: Equatable {
     case cleared
 }
 
+@MainActor
 final class ClipboardMonitor: ObservableObject {
     let settings: SettingsStore
     private let provider: ClipboardProvider
@@ -31,7 +32,6 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     private var timer: Timer?
-    private var clearTimer: Timer?
     private var countdownTimer: Timer?
     private var eventMonitor: Any?
     private var lastChangeCount: Int = 0
@@ -62,7 +62,7 @@ final class ClipboardMonitor: ObservableObject {
         stop()
         lastChangeCount = provider.changeCount
         timer = Timer.scheduledTimer(withTimeInterval: pollInterval, repeats: true) { [weak self] _ in
-            self?.checkClipboard()
+            MainActor.assumeIsolated { self?.checkClipboard() }
         }
         installPasteMonitor()
         logger.info("Monitor started (poll: \(self.pollInterval)s, delay: \(self.settings.clearDelay)s)")
@@ -79,14 +79,7 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     func clearNow() {
-        cancelCountdown()
-        provider.clear()
-        lastChangeCount = provider.changeCount
-        detectedText = nil
-        lastSanitizedAt = Date()
-        detectionCount += 1
-        status = .cleared
-        sendNotification("Sensitive data cleared from clipboard")
+        performClear()
         logger.info("Clipboard cleared manually")
     }
 
@@ -111,9 +104,9 @@ final class ClipboardMonitor: ObservableObject {
             lastChangeCount = provider.changeCount
             lastSanitizedAt = Date()
             detectedText = text
-            lastDetectionLabel = detections[0].label
+            lastDetectionLabel = detections[0].type.label
             startCountdown()
-            logger.info("Detected: \(detections[0].label)")
+            logger.info("Detected: \(detections[0].type.label)")
         } else if detections.isEmpty && detectedText != nil {
             // Clipboard changed to non-sensitive content — cancel
             cancelCountdown()
@@ -135,17 +128,15 @@ final class ClipboardMonitor: ObservableObject {
         status = statusUpdate(remaining)
 
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
-            remaining -= 1
-            if remaining <= 0 {
-                timer.invalidate()
-                self?.expireClear()
-            } else {
-                self?.status = statusUpdate(remaining)
+            MainActor.assumeIsolated {
+                remaining -= 1
+                if remaining <= 0 {
+                    timer.invalidate()
+                    self?.expireClear()
+                } else {
+                    self?.status = statusUpdate(remaining)
+                }
             }
-        }
-
-        clearTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(seconds), repeats: false) { [weak self] _ in
-            self?.expireClear()
         }
     }
 
@@ -169,11 +160,12 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     private func expireClear() {
-        countdownTimer?.invalidate()
-        countdownTimer = nil
-        clearTimer?.invalidate()
-        clearTimer = nil
+        performClear()
+        logger.info("Clipboard auto-cleared after delay")
+    }
 
+    private func performClear() {
+        cancelCountdown()
         provider.clear()
         lastChangeCount = provider.changeCount
         detectedText = nil
@@ -181,12 +173,9 @@ final class ClipboardMonitor: ObservableObject {
         detectionCount += 1
         status = .cleared
         sendNotification("Sensitive data cleared from clipboard")
-        logger.info("Clipboard auto-cleared after delay")
     }
 
     private func cancelCountdown() {
-        clearTimer?.invalidate()
-        clearTimer = nil
         countdownTimer?.invalidate()
         countdownTimer = nil
     }

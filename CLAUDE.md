@@ -4,7 +4,7 @@ Native macOS menu bar app that monitors clipboard for sensitive data and auto-cl
 
 ## Tech
 - Swift 5.9, SwiftUI, SPM (no .xcodeproj)
-- macOS 14+, `MenuBarExtra` with `.menuBarExtraStyle(.window)`
+- macOS 14+, menu bar via `NSStatusItem` + `NSPopover` (AppDelegate-driven)
 - Swift Testing for unit tests
 - No external dependencies
 

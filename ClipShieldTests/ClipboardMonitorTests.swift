@@ -26,6 +26,7 @@ final class MockClipboardProvider: ClipboardProvider {
     }
 }
 
+@MainActor
 private func makeMonitor(provider: MockClipboardProvider) -> ClipboardMonitor {
     let settings = SettingsStore(userDefaults: UserDefaults(suiteName: "test-\(UUID())")!)
     return ClipboardMonitor(
@@ -37,6 +38,7 @@ private func makeMonitor(provider: MockClipboardProvider) -> ClipboardMonitor {
 }
 
 @Suite("ClipboardMonitor")
+@MainActor
 struct ClipboardMonitorTests {
     @Test("detects sensitive data on clipboard change")
     func detectsSensitiveData() {

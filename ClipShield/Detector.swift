@@ -14,7 +14,6 @@ enum PatternType: String, CaseIterable {
 
 struct Detection {
     let type: PatternType
-    let label: String
     let match: String
 }
 
@@ -53,7 +52,10 @@ private let patterns: [Pattern] = {
             return digits.count >= 13 && digits.count <= 19 && luhn(digits)
         },
         Pattern(type: .ssn, regex: regex(#"\b\d{3}-\d{2}-\d{4}\b"#), validate: nil),
-        Pattern(type: .sin, regex: regex(#"\b\d{3}[ -]\d{3}[ -]\d{3}\b"#), validate: nil),
+        Pattern(type: .sin, regex: regex(#"\b\d{3}[ -]\d{3}[ -]\d{3}\b"#)) { match in
+            let digits = match.filter(\.isNumber)
+            return digits.count == 9 && luhn(digits)
+        },
     ]
 }()
 
@@ -69,7 +71,7 @@ func detect(_ text: String, enabled: Set<PatternType>) -> [Detection] {
             guard let matchRange = Range(m.range, in: text) else { continue }
             let match = String(text[matchRange])
             if let validate = pattern.validate, !validate(match) { continue }
-            results.append(Detection(type: pattern.type, label: pattern.type.label, match: match))
+            results.append(Detection(type: pattern.type, match: match))
         }
     }
 

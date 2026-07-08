@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UserNotifications
 import os
 
 private let logger = Logger(subsystem: "com.maferland.clipshield", category: "App")
@@ -13,6 +14,7 @@ struct ClipShieldApp: App {
     }
 }
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     let monitor = ClipboardMonitor()
     private var statusItem: NSStatusItem!
@@ -20,6 +22,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+
+        if Bundle.main.bundleIdentifier != nil {
+            UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
